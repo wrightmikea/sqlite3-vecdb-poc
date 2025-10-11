@@ -119,18 +119,147 @@ async fn handle_init(force: bool, config: Config) -> Result<()> {
     Ok(())
 }
 
-/// Handle the ingest command (placeholder)
+/// Handle the ingest command
 async fn handle_ingest(
-    _source: std::path::PathBuf,
-    _model: String,
-    _chunk_size: usize,
-    _overlap: usize,
-    _recursive: bool,
-    _config: Config,
+    source: std::path::PathBuf,
+    model: String,
+    chunk_size: usize,
+    overlap: usize,
+    recursive: bool,
+    config: Config,
 ) -> Result<()> {
-    println!("Ingestion functionality will be implemented in Phase 4");
-    println!("This will load documents, chunk them, generate embeddings, and store in the database.");
+    use vectdb::{IngestionService, OllamaClient, VectorStore};
+    use vectdb::domain::ChunkStrategy;
+
+    println!("Starting ingestion from: {:?}\n", source);
+
+    // Initialize services
+    let store = VectorStore::new(&config.database.path)?;
+    let ollama = OllamaClient::new(config.ollama.base_url.clone(), config.ollama.timeout_seconds)?;
+
+    // Check Ollama connection
+    if !ollama.health_check().await? {
+        println!("❌ Cannot connect to Ollama at {}", config.ollama.base_url);
+        println!("\nMake sure Ollama is running:");
+        println!("  ollama serve");
+        return Ok(());
+    }
+
+    // Check if model exists
+    if !ollama.has_model(&model).await? {
+        println!("❌ Model '{}' not found in Ollama", model);
+        println!("\nPull the model first:");
+        println!("  ollama pull {}", model);
+        return Ok(());
+    }
+
+    println!("✓ Connected to Ollama");
+    println!("✓ Model '{}' available\n", model);
+
+    let mut service = IngestionService::new(store, ollama);
+
+    // Determine chunk strategy
+    let strategy = ChunkStrategy::FixedSize {
+        size: chunk_size,
+        overlap,
+    };
+
+    // Collect files to ingest
+    let files = collect_files(&source, recursive)?;
+
+    if files.is_empty() {
+        println!("No files found to ingest.");
+        return Ok(());
+    }
+
+    println!("Found {} file(s) to process\n", files.len());
+
+    // Process files
+    let mut total_chunks = 0;
+    let mut total_embeddings = 0;
+    let mut skipped = 0;
+
+    for (idx, file) in files.iter().enumerate() {
+        println!("[{}/{}] Processing: {:?}", idx + 1, files.len(), file);
+
+        match service.ingest_file(file, &model, strategy).await {
+            Ok(result) => {
+                if result.skipped {
+                    println!("  ⊘ Skipped (duplicate or empty)");
+                    skipped += 1;
+                } else {
+                    println!("  ✓ {} chunks, {} embeddings", result.chunks_created, result.embeddings_created);
+                    total_chunks += result.chunks_created;
+                    total_embeddings += result.embeddings_created;
+                }
+            }
+            Err(e) => {
+                println!("  ❌ Error: {}", e);
+                skipped += 1;
+            }
+        }
+        println!();
+    }
+
+    // Summary
+    println!("=== Ingestion Complete ===");
+    println!("Files processed: {}", files.len());
+    println!("Files skipped:   {}", skipped);
+    println!("Chunks created:  {}", total_chunks);
+    println!("Embeddings:      {}", total_embeddings);
+
     Ok(())
+}
+
+/// Collect files to ingest
+fn collect_files(source: &std::path::Path, recursive: bool) -> Result<Vec<std::path::PathBuf>> {
+    let mut files = Vec::new();
+
+    if source.is_file() {
+        files.push(source.to_path_buf());
+    } else if source.is_dir() {
+        if recursive {
+            for entry in walkdir::WalkDir::new(source)
+                .follow_links(true)
+                .into_iter()
+                .filter_map(|e| e.ok())
+            {
+                if entry.file_type().is_file() {
+                    let path = entry.path();
+                    if is_supported_file(path) {
+                        files.push(path.to_path_buf());
+                    }
+                }
+            }
+        } else {
+            for entry in std::fs::read_dir(source)? {
+                let entry = entry?;
+                if entry.file_type()?.is_file() {
+                    let path = entry.path();
+                    if is_supported_file(&path) {
+                        files.push(path);
+                    }
+                }
+            }
+        }
+    } else {
+        return Err(vectdb::VectDbError::InvalidInput(format!(
+            "Source is not a file or directory: {:?}",
+            source
+        )));
+    }
+
+    Ok(files)
+}
+
+/// Check if file is supported
+fn is_supported_file(path: &std::path::Path) -> bool {
+    if let Some(ext) = path.extension() {
+        let ext = ext.to_string_lossy().to_lowercase();
+        matches!(ext.as_str(), "txt" | "md" | "markdown")
+    } else {
+        false
+    }
 }
 
 /// Handle the search command (placeholder)

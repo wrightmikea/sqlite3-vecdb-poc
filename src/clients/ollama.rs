@@ -210,9 +210,29 @@ impl OllamaClient {
     }
 
     /// Check if a specific model is available
+    /// Handles both "model" and "model:tag" formats
     pub async fn has_model(&self, model_name: &str) -> Result<bool> {
         let models = self.list_models().await?;
-        Ok(models.iter().any(|m| m.name == model_name))
+
+        // Check for exact match first
+        if models.iter().any(|m| m.name == model_name) {
+            return Ok(true);
+        }
+
+        // If model_name doesn't have a tag, try matching with :latest
+        if !model_name.contains(':') {
+            let with_latest = format!("{}:latest", model_name);
+            if models.iter().any(|m| m.name == with_latest) {
+                return Ok(true);
+            }
+        }
+
+        // Try partial matching (model name without tag)
+        let base_name = model_name.split(':').next().unwrap_or(model_name);
+        Ok(models.iter().any(|m| {
+            let model_base = m.name.split(':').next().unwrap_or(&m.name);
+            model_base == base_name
+        }))
     }
 
     /// Get information about the client configuration
