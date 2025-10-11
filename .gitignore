@@ -1,0 +1,27 @@
+# claude
+/.claude
+
+# Rust build artifacts
+/target
+Cargo.lock
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Runtime and logs
+*.log
+*.db
+*.db-shm
+*.db-wal
+
+# Configuration (keep examples)
+config.toml
+!config.example.toml
+
+# Application data directory
+.vectdb/

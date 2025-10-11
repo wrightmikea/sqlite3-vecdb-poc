@@ -1,0 +1,48 @@
+[package]
+name = "vectdb"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "vectdb"
+path = "src/main.rs"
+
+[dependencies]
+# CLI & Configuration
+clap = { version = "4.5", features = ["derive", "env"] }
+config = "0.14"
+directories = "5.0"
+
+# Async Runtime
+tokio = { version = "1.40", features = ["full"] }
+
+# Database
+rusqlite = { version = "0.31", features = ["bundled"] }
+
+# HTTP & Web Server
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["fs", "trace"] }
+reqwest = { version = "0.12", features = ["json"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+
+# Text Processing
+regex = "1.10"
+sha2 = "0.10"
+unicode-segmentation = "1.11"
+
+# Logging & Observability
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Error Handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+[dev-dependencies]
+tempfile = "3.10"
+wiremock = "0.6"
