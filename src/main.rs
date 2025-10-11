@@ -205,9 +205,63 @@ async fn handle_optimize(config: Config) -> Result<()> {
     Ok(())
 }
 
-/// Handle the models command (placeholder)
-async fn handle_models(_config: Config) -> Result<()> {
-    println!("Models listing functionality will be implemented in Phase 3");
-    println!("This will query Ollama API and list available embedding models.");
+/// Handle the models command
+async fn handle_models(config: Config) -> Result<()> {
+    use vectdb::OllamaClient;
+
+    println!("Connecting to Ollama at {}...\n", config.ollama.base_url);
+
+    let client = OllamaClient::new(
+        config.ollama.base_url.clone(),
+        config.ollama.timeout_seconds,
+    )?;
+
+    // Check if Ollama is available
+    if !client.health_check().await? {
+        println!("❌ Ollama service is not available at {}", config.ollama.base_url);
+        println!("\nMake sure Ollama is running:");
+        println!("  brew services start ollama");
+        println!("  or");
+        println!("  ollama serve");
+        return Ok(());
+    }
+
+    println!("✓ Connected to Ollama\n");
+
+    // List available models
+    let models = client.list_models().await?;
+
+    if models.is_empty() {
+        println!("No models found. Pull a model first:");
+        println!("  ollama pull nomic-embed-text");
+        return Ok(());
+    }
+
+    println!("Available Models ({}):\n", models.len());
+
+    for model in &models {
+        let size_mb = model.size as f64 / (1024.0 * 1024.0);
+        println!("  • {}", model.name);
+        println!("    Size: {:.1} MB", size_mb);
+        println!("    Modified: {}", model.modified_at);
+        println!();
+    }
+
+    // Show recommended models
+    let recommended = vec!["nomic-embed-text", "all-minilm", "mxbai-embed-large"];
+    let has_recommended: Vec<_> = models
+        .iter()
+        .filter(|m| recommended.iter().any(|r| m.name.contains(r)))
+        .collect();
+
+    if has_recommended.is_empty() {
+        println!("Recommended embedding models:");
+        for rec in recommended {
+            println!("  ollama pull {}", rec);
+        }
+    } else {
+        println!("✓ Using recommended model: {}", config.ollama.default_model);
+    }
+
     Ok(())
 }
