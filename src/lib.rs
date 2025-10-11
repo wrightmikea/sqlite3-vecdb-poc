@@ -7,12 +7,13 @@ pub mod cli;
 pub mod config;
 pub mod domain;
 pub mod error;
+pub mod repositories;
 
 // Will be implemented in later phases
 // pub mod services;
-// pub mod repositories;
 // pub mod clients;
 // pub mod server;
 
 // Re-export commonly used types
 pub use error::{Result, VectDbError};
+pub use repositories::VectorStore;

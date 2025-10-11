@@ -154,17 +154,54 @@ async fn handle_serve(_host: String, _port: u16, _config: Config) -> Result<()> 
     Ok(())
 }
 
-/// Handle the stats command (placeholder)
-async fn handle_stats(_config: Config) -> Result<()> {
-    println!("Statistics functionality will be implemented in Phase 2");
-    println!("This will display database statistics (document count, vector count, etc.).");
+/// Handle the stats command
+async fn handle_stats(config: Config) -> Result<()> {
+    use vectdb::VectorStore;
+
+    let store = VectorStore::new(&config.database.path)?;
+    let stats = store.get_stats()?;
+
+    println!("=== VectDB Statistics ===\n");
+    println!("Database:");
+    println!("  Path: {:?}", config.database.path);
+    println!("  Size: {} KB ({} bytes)", stats.db_size_bytes / 1024, stats.db_size_bytes);
+    println!();
+    println!("Content:");
+    println!("  Documents:  {}", stats.document_count);
+    println!("  Chunks:     {}", stats.chunk_count);
+    println!("  Embeddings: {}", stats.embedding_count);
+    println!();
+
+    if stats.document_count > 0 {
+        let avg_chunks = stats.chunk_count as f64 / stats.document_count as f64;
+        println!("Averages:");
+        println!("  Chunks per document: {:.2}", avg_chunks);
+
+        if stats.embedding_count > 0 {
+            let coverage = (stats.embedding_count as f64 / stats.chunk_count as f64) * 100.0;
+            println!("  Embedding coverage: {:.1}%", coverage);
+        }
+    }
+
     Ok(())
 }
 
-/// Handle the optimize command (placeholder)
-async fn handle_optimize(_config: Config) -> Result<()> {
-    println!("Optimization functionality will be implemented in Phase 2");
-    println!("This will run VACUUM and ANALYZE on the database.");
+/// Handle the optimize command
+async fn handle_optimize(config: Config) -> Result<()> {
+    use vectdb::VectorStore;
+
+    println!("Optimizing database...");
+
+    let store = VectorStore::new(&config.database.path)?;
+
+    println!("  Running VACUUM...");
+    store.vacuum()?;
+
+    println!("  Running ANALYZE...");
+    store.analyze()?;
+
+    println!("✓ Database optimization complete");
+
     Ok(())
 }
 
