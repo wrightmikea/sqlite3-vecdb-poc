@@ -262,17 +262,54 @@ fn is_supported_file(path: &std::path::Path) -> bool {
     }
 }
 
-/// Handle the search command (placeholder)
+/// Handle the search command
 async fn handle_search(
-    _query: String,
-    _top_k: usize,
-    _threshold: f32,
-    _explain: bool,
-    _format: String,
-    _config: Config,
+    query: String,
+    top_k: usize,
+    threshold: f32,
+    explain: bool,
+    format: String,
+    config: Config,
 ) -> Result<()> {
-    println!("Search functionality will be implemented in Phase 5");
-    println!("This will perform semantic search and return ranked results.");
+    use vectdb::{OllamaClient, SearchService, VectorStore};
+    use vectdb::services::search::{format_results_csv, format_results_json, format_results_text};
+
+    // Initialize services
+    let store = VectorStore::new(&config.database.path)?;
+    let ollama = OllamaClient::new(config.ollama.base_url.clone(), config.ollama.timeout_seconds)?;
+
+    // Check Ollama connection
+    if !ollama.health_check().await? {
+        println!("❌ Cannot connect to Ollama at {}", config.ollama.base_url);
+        println!("\nMake sure Ollama is running:");
+        println!("  ollama serve");
+        return Ok(());
+    }
+
+    // Check if we have any embeddings
+    let stats = store.get_stats()?;
+    if stats.embedding_count == 0 {
+        println!("❌ No embeddings found in database");
+        println!("\nIngest some documents first:");
+        println!("  vectdb ingest <file-or-directory>");
+        return Ok(());
+    }
+
+    let service = SearchService::new(store, ollama);
+
+    // Perform search
+    let model = &config.ollama.default_model;
+    let results = service.search(&query, model, top_k, threshold).await?;
+
+    // Format and display results
+    let output = match format.as_str() {
+        "json" => format_results_json(&results)?,
+        "csv" => format_results_csv(&results),
+        _ => format_results_text(&results, explain),
+    };
+
+    println!("{}", output);
+
     Ok(())
 }
 

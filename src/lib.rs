@@ -18,4 +18,4 @@ pub mod services;
 pub use clients::OllamaClient;
 pub use error::{Result, VectDbError};
 pub use repositories::VectorStore;
-pub use services::IngestionService;
+pub use services::{IngestionService, SearchService};
