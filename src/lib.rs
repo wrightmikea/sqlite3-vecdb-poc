@@ -9,10 +9,8 @@ pub mod config;
 pub mod domain;
 pub mod error;
 pub mod repositories;
+pub mod server;
 pub mod services;
-
-// Will be implemented in later phases
-// pub mod server;
 
 // Re-export commonly used types
 pub use clients::OllamaClient;

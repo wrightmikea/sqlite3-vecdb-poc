@@ -313,11 +313,14 @@ async fn handle_search(
     Ok(())
 }
 
-/// Handle the serve command (placeholder)
-async fn handle_serve(_host: String, _port: u16, _config: Config) -> Result<()> {
-    println!("Web server functionality will be implemented in Phase 6");
-    println!("This will start an HTTP server with REST API and web UI.");
-    Ok(())
+/// Handle the serve command
+async fn handle_serve(host: String, port: u16, config: Config) -> Result<()> {
+    println!("Starting VectDB web server...");
+    println!("Web UI: http://{}:{}", host, port);
+    println!("API:    http://{}:{}/api", host, port);
+    println!("\nPress Ctrl+C to stop\n");
+
+    vectdb::server::serve(host, port, config).await
 }
 
 /// Handle the stats command

@@ -11,6 +11,7 @@ use tokio::time::sleep;
 use tracing::{debug, info, warn};
 
 /// Ollama API client
+#[derive(Clone)]
 pub struct OllamaClient {
     base_url: String,
     client: Client,

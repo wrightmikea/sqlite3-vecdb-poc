@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VectDB - Semantic Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .search-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        .options {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .options input[type="number"] {
+            width: 80px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .stats {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .results {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .result-item {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .result-source {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .result-similarity {
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.9em;
+        }
+
+        .result-content {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h2 {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>VectDB - Semantic Search</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="stats" id="stats">
+            <h2 style="margin-bottom: 15px;">Database Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-docs">-</div>
+                    <div class="stat-label">Documents</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-chunks">-</div>
+                    <div class="stat-label">Chunks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-embeddings">-</div>
+                    <div class="stat-label">Embeddings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-size">-</div>
+                    <div class="stat-label">Database Size</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-section">
+            <h2 style="margin-bottom: 15px;">Search</h2>
+            <div class="search-box">
+                <input type="text" id="query" placeholder="Enter your search query..." />
+                <button onclick="search()">Search</button>
+            </div>
+            <div class="options">
+                <label>
+                    Top K:
+                    <input type="number" id="top_k" value="10" min="1" max="100" />
+                </label>
+                <label>
+                    Threshold:
+                    <input type="number" id="threshold" value="0.0" min="0" max="1" step="0.1" />
+                </label>
+            </div>
+        </div>
+
+        <div class="results" id="results" style="display: none;">
+            <h2 style="margin-bottom: 15px;">Results</h2>
+            <div id="results-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Load stats on page load
+        loadStats();
+
+        // Allow Enter key to trigger search
+        document.getElementById('query').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                search();
+            }
+        });
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+
+                document.getElementById('stat-docs').textContent = data.document_count;
+                document.getElementById('stat-chunks').textContent = data.chunk_count;
+                document.getElementById('stat-embeddings').textContent = data.embedding_count;
+
+                const sizeKB = Math.round(data.db_size_bytes / 1024);
+                document.getElementById('stat-size').textContent = sizeKB + ' KB';
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        async function search() {
+            const query = document.getElementById('query').value.trim();
+            if (!query) {
+                alert('Please enter a search query');
+                return;
+            }
+
+            const topK = document.getElementById('top_k').value;
+            const threshold = document.getElementById('threshold').value;
+
+            const resultsDiv = document.getElementById('results');
+            const resultsContainer = document.getElementById('results-container');
+
+            // Show loading state
+            resultsDiv.style.display = 'block';
+            resultsContainer.innerHTML = '<div class="loading">Searching...</div>';
+
+            try {
+                const url = `/api/search?query=${encodeURIComponent(query)}&top_k=${topK}&threshold=${threshold}`;
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const results = await response.json();
+
+                if (results.length === 0) {
+                    resultsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <h2>No results found</h2>
+                            <p>Try adjusting your query or lowering the similarity threshold</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Display results
+                resultsContainer.innerHTML = results.map((result, index) => `
+                    <div class="result-item">
+                        <div class="result-header">
+                            <span class="result-source">${escapeHtml(result.source)}</span>
+                            <span class="result-similarity">${(result.similarity * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="result-content">${escapeHtml(result.content)}</div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                resultsContainer.innerHTML = `
+                    <div class="error">
+                        Error: ${escapeHtml(error.message)}
+                    </div>
+                `;
+                console.error('Search failed:', error);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
