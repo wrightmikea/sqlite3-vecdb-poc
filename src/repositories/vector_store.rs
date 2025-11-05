@@ -4,7 +4,7 @@
 
 use crate::domain::{Chunk, Document, Embedding, SearchResult};
 use crate::error::Result;
-use rusqlite::{params, Connection, OptionalExtension};
+use rusqlite::{Connection, OptionalExtension, params};
 use std::path::Path;
 use tracing::{debug, info};
 
@@ -21,9 +21,9 @@ impl VectorStore {
         let conn = Connection::open(db_path)?;
 
         // Enable WAL mode for better concurrency
-        conn.pragma_update(None, "journal_mode", &"WAL")?;
-        conn.pragma_update(None, "synchronous", &"NORMAL")?;
-        conn.pragma_update(None, "foreign_keys", &true)?;
+        conn.pragma_update(None, "journal_mode", "WAL")?;
+        conn.pragma_update(None, "synchronous", "NORMAL")?;
+        conn.pragma_update(None, "foreign_keys", true)?;
 
         let mut store = Self { conn };
         store.init_schema()?;
@@ -36,7 +36,7 @@ impl VectorStore {
         info!("Creating in-memory database");
 
         let conn = Connection::open_in_memory()?;
-        conn.pragma_update(None, "foreign_keys", &true)?;
+        conn.pragma_update(None, "foreign_keys", true)?;
 
         let mut store = Self { conn };
         store.init_schema()?;
@@ -114,7 +114,12 @@ impl VectorStore {
         self.conn.execute(
             "INSERT INTO documents (source, content_hash, metadata, created_at)
              VALUES (?1, ?2, ?3, ?4)",
-            params![&doc.source, &doc.content_hash, &metadata_json, doc.created_at],
+            params![
+                &doc.source,
+                &doc.content_hash,
+                &metadata_json,
+                doc.created_at
+            ],
         )?;
 
         let id = self.conn.last_insert_rowid();
@@ -163,8 +168,7 @@ impl VectorStore {
                 params![content_hash],
                 |row| {
                     let metadata_json: String = row.get(3)?;
-                    let metadata = serde_json::from_str(&metadata_json)
-                        .unwrap_or_default();
+                    let metadata = serde_json::from_str(&metadata_json).unwrap_or_default();
 
                     Ok(Document {
                         id: Some(row.get(0)?),
@@ -195,7 +199,10 @@ impl VectorStore {
 
     /// Insert a new chunk
     pub fn insert_chunk(&mut self, chunk: &Chunk) -> Result<i64> {
-        debug!("Inserting chunk {} for document {}", chunk.chunk_index, chunk.document_id);
+        debug!(
+            "Inserting chunk {} for document {}",
+            chunk.chunk_index, chunk.document_id
+        );
 
         self.conn.execute(
             "INSERT INTO chunks (document_id, chunk_index, content, token_count)
@@ -433,8 +440,12 @@ impl VectorStore {
         let embedding_count = self.count_embeddings()?;
 
         // Get database file size
-        let page_count: i64 = self.conn.query_row("PRAGMA page_count", [], |row| row.get(0))?;
-        let page_size: i64 = self.conn.query_row("PRAGMA page_size", [], |row| row.get(0))?;
+        let page_count: i64 = self
+            .conn
+            .query_row("PRAGMA page_count", [], |row| row.get(0))?;
+        let page_size: i64 = self
+            .conn
+            .query_row("PRAGMA page_size", [], |row| row.get(0))?;
         let db_size_bytes = page_count * page_size;
 
         Ok(DatabaseStats {
@@ -502,7 +513,7 @@ mod tests {
 
     #[test]
     fn test_vector_conversion() {
-        let original = vec![1.0, 2.5, -3.14, 0.0];
+        let original = vec![1.0, 2.5, -3.15, 0.0];
         let bytes = vector_to_bytes(&original);
         let converted = bytes_to_vector(&bytes);
 

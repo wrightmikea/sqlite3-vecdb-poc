@@ -7,23 +7,16 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
 /// Main application configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Config {
+    #[serde(default)]
     pub database: DatabaseConfig,
+    #[serde(default)]
     pub ollama: OllamaConfig,
+    #[serde(default)]
     pub chunking: ChunkingConfig,
+    #[serde(default)]
     pub search: SearchConfig,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            database: DatabaseConfig::default(),
-            ollama: OllamaConfig::default(),
-            chunking: ChunkingConfig::default(),
-            search: SearchConfig::default(),
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -143,10 +136,10 @@ impl Config {
         }
 
         // Try default location
-        if let Some(default_path) = get_default_config_path() {
-            if default_path.exists() {
-                return Self::from_file(&default_path);
-            }
+        if let Some(default_path) = get_default_config_path()
+            && default_path.exists()
+        {
+            return Self::from_file(&default_path);
         }
 
         // Fall back to defaults
@@ -157,8 +150,9 @@ impl Config {
     pub fn save(&self, path: &PathBuf) -> Result<()> {
         // Create parent directory if it doesn't exist
         if let Some(parent) = path.parent() {
-            std::fs::create_dir_all(parent)
-                .map_err(|e| VectDbError::Config(format!("Failed to create config directory: {}", e)))?;
+            std::fs::create_dir_all(parent).map_err(|e| {
+                VectDbError::Config(format!("Failed to create config directory: {}", e))
+            })?;
         }
 
         let contents = toml::to_string_pretty(self)
@@ -173,14 +167,12 @@ impl Config {
 
 /// Get the default configuration directory path
 pub fn get_default_config_path() -> Option<PathBuf> {
-    ProjectDirs::from("com", "vectdb", "vectdb")
-        .map(|dirs| dirs.config_dir().join("config.toml"))
+    ProjectDirs::from("com", "vectdb", "vectdb").map(|dirs| dirs.config_dir().join("config.toml"))
 }
 
 /// Get the default data directory path
 pub fn get_default_data_dir() -> Option<PathBuf> {
-    ProjectDirs::from("com", "vectdb", "vectdb")
-        .map(|dirs| dirs.data_dir().to_path_buf())
+    ProjectDirs::from("com", "vectdb", "vectdb").map(|dirs| dirs.data_dir().to_path_buf())
 }
 
 #[cfg(test)]

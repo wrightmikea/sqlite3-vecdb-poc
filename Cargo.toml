@@ -1,7 +1,14 @@
 [package]
 name = "vectdb"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+authors = ["Michael A. Wright"]
+license = "MIT"
+description = "A local-first vector database for semantic search using SQLite and Ollama"
+repository = "https://github.com/wrightmikea/sqlite3-vecdb-poc"
+readme = "README.md"
+keywords = ["vector-database", "semantic-search", "embeddings", "sqlite", "ollama"]
+categories = ["command-line-utilities", "database"]
 
 [[bin]]
 name = "vectdb"

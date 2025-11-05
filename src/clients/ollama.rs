@@ -26,7 +26,7 @@ impl OllamaClient {
         let client = Client::builder()
             .timeout(timeout)
             .build()
-            .map_err(|e| VectDbError::Http(e))?;
+            .map_err(VectDbError::Http)?;
 
         info!("Created Ollama client with base URL: {}", base_url);
 
@@ -49,7 +49,10 @@ impl OllamaClient {
                 if is_ok {
                     info!("Ollama health check passed");
                 } else {
-                    warn!("Ollama health check failed with status: {}", response.status());
+                    warn!(
+                        "Ollama health check failed with status: {}",
+                        response.status()
+                    );
                 }
                 Ok(is_ok)
             }
@@ -75,7 +78,11 @@ impl OllamaClient {
             return Ok(Vec::new());
         }
 
-        debug!("Generating embeddings for {} texts using model {}", texts.len(), model);
+        debug!(
+            "Generating embeddings for {} texts using model {}",
+            texts.len(),
+            model
+        );
 
         let url = format!("{}/api/embeddings", self.base_url);
 
@@ -120,7 +127,10 @@ impl OllamaClient {
                         return Ok(embed_response.embedding);
                     } else if response.status().as_u16() == 404 {
                         // Model not found - no point in retrying
-                        let error_text = response.text().await.unwrap_or_else(|_| "Model not found".to_string());
+                        let error_text = response
+                            .text()
+                            .await
+                            .unwrap_or_else(|_| "Model not found".to_string());
                         return Err(VectDbError::EmbeddingFailed(format!(
                             "Model '{}' not found. {}",
                             request.model, error_text
@@ -128,7 +138,10 @@ impl OllamaClient {
                     } else {
                         // Server error - may be transient
                         let status = response.status();
-                        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+                        let error_text = response
+                            .text()
+                            .await
+                            .unwrap_or_else(|_| "Unknown error".to_string());
 
                         if retries < MAX_RETRIES {
                             warn!(

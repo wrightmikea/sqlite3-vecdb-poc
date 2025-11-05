@@ -1,5 +1,8 @@
 // Vector Database CLI Library
 //
+// Copyright (c) 2025 Michael A. Wright
+// Licensed under the MIT License (see LICENSE file)
+//
 // This library provides the core functionality for a semantic search system
 // using SQLite's vector extension and local Ollama embedding models.
 

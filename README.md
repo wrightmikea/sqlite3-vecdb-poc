@@ -15,17 +15,16 @@ VectDB is a self-contained, local-first vector database that enables semantic se
 - **Persistent**: All data stored in a portable SQLite database
 - **Observable**: Structured logging with configurable verbosity
 
-## Current Status: Phase 1 Complete
+## Current Status: Phase 6 Complete ✅
 
-Phase 1 (Foundation) has been successfully implemented:
+All core features have been implemented:
 
-- [x] Project structure with modular architecture
-- [x] Core domain types (Document, Chunk, Embedding)
-- [x] Configuration management with TOML
-- [x] Full CLI skeleton with clap
-- [x] Structured logging with tracing
-- [x] Error handling infrastructure
-- [x] All tests passing
+- [x] Phase 1: Foundation (CLI structure, config, domain types)
+- [x] Phase 2: Vector Store (SQLite, CRUD operations)
+- [x] Phase 3: Ollama Integration (embeddings, health checks)
+- [x] Phase 4: Ingestion Pipeline (file loading, chunking, deduplication)
+- [x] Phase 5: Search Implementation (semantic search, multiple output formats)
+- [x] Phase 6: Web Server & REST API (Axum-based HTTP API)
 
 ## Installation
 
@@ -291,13 +290,30 @@ The codebase follows Rust best practices:
 - **Reqwest**: HTTP client
 - **Axum**: Web framework (future)
 
+## Examples
+
+Try VectDB with the included example documents:
+
+```bash
+# Ingest example documents
+cargo run -- ingest examples/documents/ -r
+
+# Search the examples
+cargo run -- search "What is Rust?" -k 3
+cargo run -- search "vector database similarity" --explain
+```
+
+See `examples/README.md` for more details.
+
 ## Contributing
 
-This is currently a proof-of-concept project. Contributions will be welcome once the core functionality is complete.
+Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests.
 
 ## License
 
-[To be determined]
+MIT License - Copyright (c) 2025 Michael A. Wright
+
+See [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
@@ -307,5 +323,6 @@ This is currently a proof-of-concept project. Contributions will be welcome once
 
 ---
 
-**Status**: Phase 1 Complete (Foundation)
-**Last Updated**: 2025-10-11
+**Status**: Phase 6 Complete - Full functionality implemented
+**License**: MIT
+**Last Updated**: 2025-11-05

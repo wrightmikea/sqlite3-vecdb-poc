@@ -131,15 +131,10 @@ pub struct SearchResult {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum ChunkStrategy {
     /// Fixed size with overlap
-    FixedSize {
-        size: usize,
-        overlap: usize,
-    },
+    FixedSize { size: usize, overlap: usize },
 
     /// Semantic boundaries (sentences, paragraphs)
-    Semantic {
-        max_size: usize,
-    },
+    Semantic { max_size: usize },
 }
 
 impl Default for ChunkStrategy {

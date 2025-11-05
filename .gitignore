@@ -25,3 +25,13 @@ config.toml
 
 # Application data directory
 .vectdb/
+
+# Document ingestion directories (keep examples/)
+texts/
+documents/
+data/
+corpus/
+*.pdf
+!examples/**/*.pdf
+!examples/**/*.txt
+!examples/**/*.md

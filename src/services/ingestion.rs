@@ -52,7 +52,10 @@ impl IngestionService {
 
         // Check for duplicates
         if let Some(existing) = self.store.get_document_by_hash(&document.content_hash)? {
-            info!("Document already exists (duplicate content), skipping: {:?}", file_path);
+            info!(
+                "Document already exists (duplicate content), skipping: {:?}",
+                file_path
+            );
             return Ok(IngestionResult {
                 file_path: file_path.to_path_buf(),
                 document_id: existing.id.unwrap_or(0),
@@ -194,14 +197,15 @@ pub struct IngestionResult {
 mod tests {
     use super::*;
     use crate::config::Config;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn test_load_file_txt() {
         let config = Config::default();
         let store = VectorStore::in_memory().unwrap();
-        let ollama = OllamaClient::new(config.ollama.base_url, config.ollama.timeout_seconds).unwrap();
+        let ollama =
+            OllamaClient::new(config.ollama.base_url, config.ollama.timeout_seconds).unwrap();
         let service = IngestionService::new(store, ollama);
 
         // Create a temporary file
@@ -216,7 +220,8 @@ mod tests {
     fn test_load_file_nonexistent() {
         let config = Config::default();
         let store = VectorStore::in_memory().unwrap();
-        let ollama = OllamaClient::new(config.ollama.base_url, config.ollama.timeout_seconds).unwrap();
+        let ollama =
+            OllamaClient::new(config.ollama.base_url, config.ollama.timeout_seconds).unwrap();
         let service = IngestionService::new(store, ollama);
 
         let result = service.load_file(Path::new("/nonexistent/file.txt"));

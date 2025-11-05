@@ -28,7 +28,10 @@ impl SearchService {
         top_k: usize,
         threshold: f32,
     ) -> Result<Vec<SearchResult>> {
-        info!("Performing semantic search: query='{}', top_k={}, threshold={}", query, top_k, threshold);
+        info!(
+            "Performing semantic search: query='{}', top_k={}, threshold={}",
+            query, top_k, threshold
+        );
 
         // Generate embedding for the query
         debug!("Generating query embedding");
@@ -41,7 +44,11 @@ impl SearchService {
         // Filter by threshold
         if threshold > 0.0 {
             results.retain(|r| r.similarity >= threshold);
-            debug!("Filtered to {} results above threshold {}", results.len(), threshold);
+            debug!(
+                "Filtered to {} results above threshold {}",
+                results.len(),
+                threshold
+            );
         }
 
         info!("Found {} results", results.len());
@@ -117,7 +124,6 @@ pub fn format_results_csv(results: &[SearchResult]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::Config;
     use crate::domain::{Chunk, Document};
 
     #[test]

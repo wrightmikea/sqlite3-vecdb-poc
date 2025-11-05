@@ -1,10 +1,15 @@
+// VectDB - Vector Database CLI
+//
+// Copyright (c) 2025 Michael A. Wright
+// Licensed under the MIT License (see LICENSE file)
+
 use clap::Parser;
 use tracing::{error, info};
-use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
+use tracing_subscriber::{EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
-use vectdb::cli::{Cli, Commands};
-use vectdb::config::{get_default_config_path, Config};
 use vectdb::Result;
+use vectdb::cli::{Cli, Commands};
+use vectdb::config::{Config, get_default_config_path};
 
 #[tokio::main]
 async fn main() {
@@ -42,8 +47,8 @@ async fn main() {
 
 /// Initialize the tracing subscriber for logging
 fn init_logging(log_level: &str) -> Result<()> {
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(log_level));
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(log_level));
 
     tracing_subscriber::registry()
         .with(env_filter)
@@ -102,13 +107,15 @@ async fn execute_command(command: Commands, config: Config) -> Result<()> {
 
 /// Handle the init command
 async fn handle_init(force: bool, config: Config) -> Result<()> {
-    let config_path = get_default_config_path()
-        .ok_or_else(|| vectdb::VectDbError::Config("Could not determine config directory".to_string()))?;
+    let config_path = get_default_config_path().ok_or_else(|| {
+        vectdb::VectDbError::Config("Could not determine config directory".to_string())
+    })?;
 
     if config_path.exists() && !force {
-        return Err(vectdb::VectDbError::Config(
-            format!("Configuration file already exists at {:?}. Use --force to overwrite.", config_path)
-        ));
+        return Err(vectdb::VectDbError::Config(format!(
+            "Configuration file already exists at {:?}. Use --force to overwrite.",
+            config_path
+        )));
     }
 
     config.save(&config_path)?;
@@ -128,14 +135,17 @@ async fn handle_ingest(
     recursive: bool,
     config: Config,
 ) -> Result<()> {
-    use vectdb::{IngestionService, OllamaClient, VectorStore};
     use vectdb::domain::ChunkStrategy;
+    use vectdb::{IngestionService, OllamaClient, VectorStore};
 
     println!("Starting ingestion from: {:?}\n", source);
 
     // Initialize services
     let store = VectorStore::new(&config.database.path)?;
-    let ollama = OllamaClient::new(config.ollama.base_url.clone(), config.ollama.timeout_seconds)?;
+    let ollama = OllamaClient::new(
+        config.ollama.base_url.clone(),
+        config.ollama.timeout_seconds,
+    )?;
 
     // Check Ollama connection
     if !ollama.health_check().await? {
@@ -188,7 +198,10 @@ async fn handle_ingest(
                     println!("  ⊘ Skipped (duplicate or empty)");
                     skipped += 1;
                 } else {
-                    println!("  ✓ {} chunks, {} embeddings", result.chunks_created, result.embeddings_created);
+                    println!(
+                        "  ✓ {} chunks, {} embeddings",
+                        result.chunks_created, result.embeddings_created
+                    );
                     total_chunks += result.chunks_created;
                     total_embeddings += result.embeddings_created;
                 }
@@ -271,12 +284,15 @@ async fn handle_search(
     format: String,
     config: Config,
 ) -> Result<()> {
-    use vectdb::{OllamaClient, SearchService, VectorStore};
     use vectdb::services::search::{format_results_csv, format_results_json, format_results_text};
+    use vectdb::{OllamaClient, SearchService, VectorStore};
 
     // Initialize services
     let store = VectorStore::new(&config.database.path)?;
-    let ollama = OllamaClient::new(config.ollama.base_url.clone(), config.ollama.timeout_seconds)?;
+    let ollama = OllamaClient::new(
+        config.ollama.base_url.clone(),
+        config.ollama.timeout_seconds,
+    )?;
 
     // Check Ollama connection
     if !ollama.health_check().await? {
@@ -333,7 +349,11 @@ async fn handle_stats(config: Config) -> Result<()> {
     println!("=== VectDB Statistics ===\n");
     println!("Database:");
     println!("  Path: {:?}", config.database.path);
-    println!("  Size: {} KB ({} bytes)", stats.db_size_bytes / 1024, stats.db_size_bytes);
+    println!(
+        "  Size: {} KB ({} bytes)",
+        stats.db_size_bytes / 1024,
+        stats.db_size_bytes
+    );
     println!();
     println!("Content:");
     println!("  Documents:  {}", stats.document_count);
@@ -387,7 +407,10 @@ async fn handle_models(config: Config) -> Result<()> {
 
     // Check if Ollama is available
     if !client.health_check().await? {
-        println!("❌ Ollama service is not available at {}", config.ollama.base_url);
+        println!(
+            "❌ Ollama service is not available at {}",
+            config.ollama.base_url
+        );
         println!("\nMake sure Ollama is running:");
         println!("  brew services start ollama");
         println!("  or");

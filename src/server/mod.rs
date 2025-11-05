@@ -6,11 +6,11 @@ use crate::domain::SearchResult;
 use crate::error::Result;
 use crate::repositories::VectorStore;
 use axum::{
+    Json, Router,
     extract::{Query, State},
     http::StatusCode,
     response::{Html, IntoResponse, Response},
     routing::get,
-    Json, Router,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -38,7 +38,10 @@ pub async fn serve(host: String, port: u16, config: Config) -> Result<()> {
     info!("Starting web server on {}:{}", host, port);
 
     // Initialize Ollama client
-    let ollama = OllamaClient::new(config.ollama.base_url.clone(), config.ollama.timeout_seconds)?;
+    let ollama = OllamaClient::new(
+        config.ollama.base_url.clone(),
+        config.ollama.timeout_seconds,
+    )?;
 
     let state = AppState::new(config, ollama);
 

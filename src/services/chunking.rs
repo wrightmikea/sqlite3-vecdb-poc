@@ -30,7 +30,7 @@ fn chunk_fixed_size(text: &str, size: usize, overlap: usize) -> Vec<String> {
 
     while start < chars.len() {
         let end = (start + size).min(chars.len());
-        let chunk: String = chars[start..end].iter().map(|s| *s).collect();
+        let chunk: String = chars[start..end].iter().copied().collect();
 
         if !chunk.trim().is_empty() {
             chunks.push(chunk);
@@ -159,7 +159,7 @@ mod tests {
         let text = "Hello world! This is a test.";
         let chunks = chunk_fixed_size(text, 10, 2);
 
-        assert!(chunks.len() > 0);
+        assert!(!chunks.is_empty());
         assert!(chunks[0].len() <= 10);
     }
 
@@ -187,7 +187,7 @@ mod tests {
         let text = "This is sentence one. This is sentence two. This is sentence three.";
         let chunks = chunk_semantic(text, 30);
 
-        assert!(chunks.len() > 0);
+        assert!(!chunks.is_empty());
         for chunk in &chunks {
             assert!(chunk.graphemes(true).count() <= 35); // Small buffer for word boundaries
         }
@@ -198,7 +198,7 @@ mod tests {
         let text = "Paragraph one.\n\nParagraph two. Second sentence.\n\nParagraph three.";
         let chunks = chunk_semantic(text, 100);
 
-        assert!(chunks.len() > 0);
+        assert!(!chunks.is_empty());
     }
 
     #[test]
@@ -212,10 +212,10 @@ mod tests {
                 overlap: 2,
             },
         );
-        assert!(fixed.len() > 0);
+        assert!(!fixed.is_empty());
 
         let semantic = chunk_text(text, ChunkStrategy::Semantic { max_size: 50 });
-        assert!(semantic.len() > 0);
+        assert!(!semantic.is_empty());
     }
 
     #[test]
