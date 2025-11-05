@@ -53,8 +53,9 @@ else
     wasm-pack build --target web --out-dir ../docs --release
     cd ..
 
-    # Copy the HTML file
+    # Copy the HTML file and favicon
     cp demo/index.html docs/
+    cp static/favicon.ico docs/
 
     # Generate build-info.js for demo
     cat > docs/build-info.js <<EOF
