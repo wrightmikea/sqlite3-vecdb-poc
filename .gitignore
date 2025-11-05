@@ -26,6 +26,9 @@ config.toml
 # Application data directory
 .vectdb/
 
+# Build artifacts
+static/build-info.js
+
 # Document ingestion directories (keep examples/)
 texts/
 documents/

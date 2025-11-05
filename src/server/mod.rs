@@ -48,6 +48,8 @@ pub async fn serve(host: String, port: u16, config: Config) -> Result<()> {
     // Build routes
     let app = Router::new()
         .route("/", get(index_handler))
+        .route("/build-info.js", get(build_info_handler))
+        .route("/favicon.ico", get(favicon_handler))
         .route("/api/health", get(health_handler))
         .route("/api/stats", get(stats_handler))
         .route("/api/search", get(search_handler))
@@ -74,6 +76,35 @@ pub async fn serve(host: String, port: u16, config: Config) -> Result<()> {
 /// Root handler - returns simple HTML UI
 async fn index_handler() -> Html<&'static str> {
     Html(include_str!("../../static/index.html"))
+}
+
+/// Build info handler - returns JavaScript with build information
+async fn build_info_handler() -> Response {
+    // Try to read the build-info.js file, fallback to default if not found
+    let build_info = std::fs::read_to_string("static/build-info.js")
+        .unwrap_or_else(|_| {
+            "window.BUILD_INFO = { host: 'unknown', commit: 'unknown', timestamp: 'unknown' };".to_string()
+        });
+
+    (
+        StatusCode::OK,
+        [("Content-Type", "application/javascript")],
+        build_info,
+    )
+        .into_response()
+}
+
+/// Favicon handler - serves favicon.ico from static directory
+async fn favicon_handler() -> Response {
+    match std::fs::read("static/favicon.ico") {
+        Ok(data) => (
+            StatusCode::OK,
+            [("Content-Type", "image/x-icon")],
+            data,
+        )
+            .into_response(),
+        Err(_) => StatusCode::NOT_FOUND.into_response(),
+    }
 }
 
 /// Health check endpoint

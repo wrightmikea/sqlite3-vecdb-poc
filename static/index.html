@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VectDB - Semantic Search</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <style>
         * {
             margin: 0;
@@ -186,6 +187,63 @@
         .empty-state h2 {
             margin-bottom: 10px;
         }
+
+        footer {
+            margin-top: 60px;
+            padding: 30px 0;
+            background: #2c3e50;
+            color: #ecf0f1;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 10px;
+            color: #3498db;
+            font-size: 1.1em;
+        }
+
+        .footer-section p, .footer-section ul {
+            margin: 5px 0;
+            font-size: 0.9em;
+            line-height: 1.8;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .footer-section a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 20px auto 0;
+            padding: 20px 20px 0;
+            border-top: 1px solid #34495e;
+            text-align: center;
+            font-size: 0.85em;
+            color: #95a5a6;
+        }
+
+        .build-info {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+            color: #7f8c8d;
+        }
     </style>
 </head>
 <body>
@@ -242,9 +300,46 @@
         </div>
     </div>
 
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About</h3>
+                <p>VectDB is a local-first vector database for semantic search using SQLite and Ollama.</p>
+                <p>Privacy-focused, no external API dependencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Links</h3>
+                <ul>
+                    <li><a href="https://github.com/wrightmikea/sqlite3-vecdb-poc" target="_blank">GitHub Repository</a></li>
+                    <li><a href="https://github.com/wrightmikea/sqlite3-vecdb-poc/blob/main/LICENSE" target="_blank">MIT License</a></li>
+                    <li><a href="/api/health">API Health Check</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Build Info</h3>
+                <div class="build-info">
+                    <p>Host: <span id="build-host">unknown</span></p>
+                    <p>Commit: <span id="build-commit">unknown</span></p>
+                    <p>Built: <span id="build-time">unknown</span></p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Michael A. Wright. Licensed under the MIT License.</p>
+        </div>
+    </footer>
+
+    <script src="/build-info.js"></script>
     <script>
         // Load stats on page load
         loadStats();
+
+        // Load build info
+        if (window.BUILD_INFO) {
+            document.getElementById('build-host').textContent = window.BUILD_INFO.host || 'unknown';
+            document.getElementById('build-commit').textContent = window.BUILD_INFO.commit || 'unknown';
+            document.getElementById('build-time').textContent = window.BUILD_INFO.timestamp || 'unknown';
+        }
 
         // Allow Enter key to trigger search
         document.getElementById('query').addEventListener('keypress', function(e) {

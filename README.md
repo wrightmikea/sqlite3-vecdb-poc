@@ -15,6 +15,12 @@ VectDB is a self-contained, local-first vector database that enables semantic se
 - **Persistent**: All data stored in a portable SQLite database
 - **Observable**: Structured logging with configurable verbosity
 
+### Web Interface
+
+VectDB includes a built-in web interface for easy semantic search:
+
+![VectDB Web Interface](images/screenshot.png)
+
 ## Current Status: Phase 6 Complete ✅
 
 All core features have been implemented:
@@ -46,12 +52,14 @@ All core features have been implemented:
 ### Build from Source
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/wrightmikea/sqlite3-vecdb-poc
 cd sqlite3-vecdb-poc
-cargo build --release
+./scripts/build.sh
 ```
 
 The binary will be available at `target/release/vectdb`.
+
+**Note**: The `build.sh` script generates build information (hostname, git commit, timestamp) that is displayed in the web UI footer.
 
 ## Quick Start
 
@@ -174,17 +182,26 @@ Options:
   -f, --format <FORMAT>        Output format: text, json, csv [default: text]
 ```
 
-### `serve` (Coming in Phase 6)
+### `serve`
 
 Start the web server:
 
 ```bash
+# Using the serve script
+./scripts/serve.sh
+
+# Or with custom port/host
+./scripts/serve.sh --port 8080 --host 0.0.0.0
+
+# Or directly
 vectdb serve [OPTIONS]
 
 Options:
   -p, --port <PORT>  Server port [default: 3000]
   -H, --host <HOST>  Server host [default: 127.0.0.1]
 ```
+
+Access the web interface at `http://localhost:3000` (or your configured host/port).
 
 ### `stats` (Coming in Phase 2)
 
