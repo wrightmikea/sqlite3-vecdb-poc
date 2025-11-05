@@ -6,7 +6,72 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 VectDB is a Rust-based CLI application for semantic search using SQLite's vector extension (sqlite-vec) and local Ollama embedding models. It's a local-first, privacy-focused vector database that enables semantic search across document collections without external API dependencies.
 
-**Current Status**: Phase 6 complete (Web Server & REST API)
+**Current Status**: Phase 6 complete (Web Server & REST API), Phase 7 in progress (Polish & Documentation)
+
+## Development Process - IMPORTANT
+
+**Before making any changes**, review the [Development Process](documentation/process.md) documentation.
+
+### Required Pre-Commit Quality Checks
+
+**EVERY commit must pass these checks** (no exceptions):
+
+1. **Format code**: `cargo fmt`
+   - Verify: `cargo fmt -- --check`
+
+2. **Fix all Clippy warnings**: `cargo clippy --all-targets --all-features -- -D warnings`
+   - Must have zero warnings (Rust 2024 edition has stricter lints)
+
+3. **Run all tests**: `cargo test`
+   - All tests must pass
+
+4. **Build release**: `cargo build --release`
+   - Must compile without errors or warnings
+
+5. **Verify .gitignore**: Check `git status` for unexpected files
+   - Ensure build artifacts excluded (target/, *.log, *.db)
+   - Protect document directories (texts/, documents/, data/)
+
+6. **Update documentation**: If changes affect user-facing features or architecture
+   - Update README.md, CLAUDE.md, or documentation/*.md as needed
+
+### Test-Driven Development (TDD)
+
+Use the **Red-Green-Refactor** cycle for all features and fixes:
+
+1. **Red**: Write failing test first (defines expected behavior)
+2. **Green**: Write minimal code to make test pass
+3. **Refactor**: Improve code quality while keeping tests green
+
+See [documentation/process.md](documentation/process.md) for detailed TDD workflow and examples.
+
+### UI Testing
+
+For web interface changes, use **MCP/Playwright**:
+```bash
+# Start server in background
+./scripts/serve.sh &
+
+# Use MCP/Playwright tools to:
+# - Navigate to pages
+# - Fill forms and click buttons
+# - Verify results
+# - Take screenshots
+
+# Stop server when done
+```
+
+### Comprehensive Documentation
+
+The `documentation/` directory contains detailed guides:
+- **[architecture.md](documentation/architecture.md)** - System architecture and design patterns
+- **[prd.md](documentation/prd.md)** - Product requirements and user stories
+- **[design.md](documentation/design.md)** - Component designs and algorithms
+- **[process.md](documentation/process.md)** - Development workflow (TDD, quality checks)
+- **[status.md](documentation/status.md)** - Current status and metrics
+- **[plan.md](documentation/plan.md)** - Roadmap and next steps
+
+**Consult these documents before starting work on any significant feature or refactoring.**
 
 ## Build & Test Commands
 
@@ -221,7 +286,7 @@ Recommended embedding models: nomic-embed-text, all-minilm, mxbai-embed-large
 
 ## Roadmap
 
-Completed phases:
+**Completed phases**:
 - ✅ Phase 1: Foundation (CLI structure, config, domain types)
 - ✅ Phase 2: Vector Store (SQLite, CRUD operations)
 - ✅ Phase 3: Ollama Integration
@@ -229,8 +294,23 @@ Completed phases:
 - ✅ Phase 5: Search Implementation
 - ✅ Phase 6: Web Server & REST API
 
-Future work:
-- Phase 7: Polish & Documentation (benchmarks, example datasets, release binaries)
-- Integrate sqlite-vec extension for efficient vector search
-- Support PDF ingestion
-- Add more chunking strategies
+**Current phase**:
+- 🚧 Phase 7: Polish & Documentation
+  - [x] Comprehensive documentation suite (architecture, prd, design, process, status, plan)
+  - [x] Build scripts (build.sh, serve.sh) with build metadata injection
+  - [x] Web UI footer with copyright and build info
+  - [x] Live WASM demo on GitHub Pages
+  - [ ] Tutorial documentation
+  - [ ] Performance benchmarks
+  - [ ] Example datasets
+  - [ ] Release binaries for major platforms
+  - [ ] CI/CD pipeline
+
+**Next priorities**:
+- Complete Phase 7 (tutorials, benchmarks, release v0.1.0)
+- Set up CI/CD with GitHub Actions
+- Integrate sqlite-vec extension for 10-100x faster search
+- Add PDF document support
+- Implement hybrid search (BM25 + vector)
+
+For detailed roadmap and priorities, see **[documentation/plan.md](documentation/plan.md)**.

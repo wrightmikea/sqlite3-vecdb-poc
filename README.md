@@ -25,6 +25,19 @@ VectDB includes a built-in web interface for easy semantic search:
 
 The live demo runs entirely in your browser using WebAssembly, with pre-loaded example data.
 
+## Documentation
+
+Comprehensive documentation is available in the `documentation/` directory:
+
+- **[Architecture](documentation/architecture.md)** - System architecture, design patterns, and technical decisions
+- **[Product Requirements](documentation/prd.md)** - Product vision, features, and user stories
+- **[Design](documentation/design.md)** - Detailed component designs, algorithms, and interfaces
+- **[Development Process](documentation/process.md)** - TDD workflow, quality checks, and commit guidelines
+- **[Project Status](documentation/status.md)** - Current progress, metrics, and known issues
+- **[Development Plan](documentation/plan.md)** - Roadmap, next steps, and priorities
+
+For developers working on VectDB, start with [CLAUDE.md](CLAUDE.md) for build commands and development guidelines.
+
 ## Current Status: Phase 6 Complete ✅
 
 All core features have been implemented:
@@ -131,11 +144,15 @@ VectDB follows a hexagonal (ports and adapters) architecture with clear separati
 
 ```
 src/
-├── cli/          # Command-line interface definitions
-├── config/       # Configuration management
-├── domain/       # Core domain types and business logic
-├── error.rs      # Error types and Result alias
-└── main.rs       # Application entry point
+├── cli/           # Command-line interface definitions
+├── config/        # Configuration management
+├── domain/        # Core domain types and business logic
+├── repositories/  # Data persistence (VectorStore)
+├── clients/       # External services (OllamaClient)
+├── services/      # Business logic (Ingestion, Search)
+├── server/        # Web server and REST API
+├── error.rs       # Error types and Result alias
+└── main.rs        # Application entry point
 ```
 
 ### Core Domain Types
@@ -145,6 +162,8 @@ src/
 - **Embedding**: Vector representation of a chunk
 - **SearchResult**: Result from a semantic search query
 - **ChunkStrategy**: Configuration for text chunking
+
+For detailed architecture information, see [documentation/architecture.md](documentation/architecture.md).
 
 ## Commands
 
@@ -158,7 +177,7 @@ Initialize or reset configuration:
 vectdb init [--force]
 ```
 
-### `ingest` (Coming in Phase 4)
+### `ingest`
 
 Ingest documents into the vector database:
 
@@ -172,7 +191,7 @@ Options:
   -r, --recursive               Process directories recursively
 ```
 
-### `search` (Coming in Phase 5)
+### `search`
 
 Search the vector database:
 
@@ -207,7 +226,7 @@ Options:
 
 Access the web interface at `http://localhost:3000` (or your configured host/port).
 
-### `stats` (Coming in Phase 2)
+### `stats`
 
 Display database statistics:
 
@@ -215,15 +234,15 @@ Display database statistics:
 vectdb stats
 ```
 
-### `optimize` (Coming in Phase 2)
+### `optimize`
 
-Optimize database performance:
+Optimize database performance (planned):
 
 ```bash
 vectdb optimize
 ```
 
-### `models` (Coming in Phase 3)
+### `models`
 
 List available Ollama models:
 
@@ -264,52 +283,31 @@ The codebase follows Rust best practices:
 
 ## Roadmap
 
-### Phase 2: Vector Store (Next)
-- SQLite database with sqlite-vec extension
-- Schema migrations
-- CRUD operations for documents and embeddings
-- Vector similarity search
+All core phases (1-6) are complete! Current work focuses on Phase 7 (polish and documentation).
 
-### Phase 3: Ollama Integration
-- HTTP client for Ollama API
-- Embedding generation
-- Model listing and validation
-- Retry logic and error handling
+### Next Steps
 
-### Phase 4: Ingestion Pipeline
-- Document loaders (txt, markdown, PDF)
-- Text chunking strategies
-- Batch processing with progress tracking
-- Duplicate detection
+- Complete comprehensive documentation suite
+- Create tutorial documentation
+- Performance benchmarking
+- Release v0.1.0 with binaries
+- Set up CI/CD pipeline
+- PDF support
+- SQLite-vec integration for improved performance
 
-### Phase 5: Search Implementation
-- Semantic search with vector similarity
-- Result ranking and filtering
-- Explain mode for debugging
-- Multiple output formats
-
-### Phase 6: Web Server & UI
-- REST API with Axum
-- Interactive web interface
-- Real-time ingestion monitoring
-- Visualization of results
-
-### Phase 7: Polish & Documentation
-- Comprehensive documentation
-- Example datasets
-- Performance benchmarks
-- Release-ready binaries
+For detailed roadmap and priorities, see [documentation/plan.md](documentation/plan.md).
 
 ## Technology Stack
 
-- **Rust 2021**: Core language
-- **Clap 4.x**: CLI parsing
+- **Rust 2024**: Core language
+- **Clap 4.x**: CLI parsing with derive macros
 - **Tokio**: Async runtime
 - **Tracing**: Structured logging
-- **Serde**: Serialization
-- **SQLite + rusqlite**: Database
-- **Reqwest**: HTTP client
-- **Axum**: Web framework (future)
+- **Serde**: Serialization (JSON, TOML)
+- **SQLite + rusqlite**: Vector database storage
+- **Reqwest**: HTTP client for Ollama API
+- **Axum**: Web framework for REST API
+- **wasm-bindgen**: WebAssembly bindings for demo
 
 ## Examples
 
