@@ -21,6 +21,10 @@ VectDB includes a built-in web interface for easy semantic search:
 
 ![VectDB Web Interface](images/screenshot.png)
 
+**Try the live demo**: [https://wrightmikea.github.io/sqlite3-vecdb-poc/](https://wrightmikea.github.io/sqlite3-vecdb-poc/)
+
+The live demo runs entirely in your browser using WebAssembly, with pre-loaded example data.
+
 ## Current Status: Phase 6 Complete ✅
 
 All core features have been implemented:

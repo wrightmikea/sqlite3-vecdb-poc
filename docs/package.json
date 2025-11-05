@@ -1,0 +1,19 @@
+{
+  "name": "vectdb-demo",
+  "type": "module",
+  "collaborators": [
+    "Michael A. Wright"
+  ],
+  "version": "0.1.0",
+  "license": "MIT",
+  "files": [
+    "vectdb_demo_bg.wasm",
+    "vectdb_demo.js",
+    "vectdb_demo.d.ts"
+  ],
+  "main": "vectdb_demo.js",
+  "types": "vectdb_demo.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
